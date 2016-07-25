@@ -1,22 +1,15 @@
 //setting up server app and port
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
 
-//variables
-var todos = [{
-  id: 1,
-  description: 'Meet mom for Lunch',
-  completed: false,
-}, {
-  id: 2,
-  description: 'Go to market',
-  completed: false,
-}, {
-  id: 3,
-  description: 'Study programming',
-  completed: true,
-}];
+//variables and data
+var todos = [];
+var todoNextId = 1;
+
+//middleware
+app.use(bodyParser.json());
 
 //REQUESTS
 app.get('/', function(req, res) {
@@ -40,6 +33,13 @@ app.get('/todos/:id', function(req, res) {
   }
   //how to send a 404 if get invalid
   res.status(404).send();
+});
+//POST a todo to app (can take data)
+app.post('/todos', function(req, res) {
+  var body = req.body;
+  body.id = todoNextId++;
+  todos.push(body);
+  res.json(body);
 });
 
 
@@ -65,4 +65,7 @@ git status
 git commit -m "Message"
 git push heroku master
 heroku open
+
+go to github, login, create new repo public no read me
+and then copy and paste push related lines into terminal
 */
