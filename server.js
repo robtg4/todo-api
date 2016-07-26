@@ -60,7 +60,7 @@ app.delete('/todos/:id', function(req, res) {
     res.send("TODO task with id "+matchedTodo.id+" deleted!");
   } else
   {
-    res.status(404).json('{"error": "no todo found with that id"}');
+    res.status(404).json({"error": "no todo found with that id"});
   }
 });
 
