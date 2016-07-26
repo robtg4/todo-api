@@ -50,6 +50,19 @@ app.post('/todos', function(req, res) {
     res.json(body);
   }
 });
+//DELETE a todo item
+app.delete('/todos/:id', function(req, res) {
+  var todoId = parseInt(req.params.id, 10);
+  var matchedTodo = _.findWhere(todos, {id: todoId});
+  if (matchedTodo)
+  {
+    todos.splice(todos.indexOf(matchedTodo), 1);
+    res.send("TODO task with id "+matchedTodo.id+" deleted!");
+  } else
+  {
+    res.status(404).send();
+  }
+});
 
 
 //listening server
