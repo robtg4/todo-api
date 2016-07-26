@@ -1,10 +1,11 @@
 //setting up server app and port
 var express = require('express');
 var bodyParser = require('body-parser');
-var app = express();
-var PORT = process.env.PORT || 3000;
+var _ = require('underscore'); //underscorejs.org
 
 //variables and data
+var app = express();
+var PORT = process.env.PORT || 3000;
 var todos = [];
 var todoNextId = 1;
 
@@ -24,22 +25,29 @@ app.get('/todos', function(req, res) {
 app.get('/todos/:id', function(req, res) {
   //use req.params.var_name to get passed variable value
   var todoId = parseInt(req.params.id, 10);
-  for (var i = 0; i < todos.length; i++)
+  var matchedTodo = _.findWhere(todos, {id: todoId});
+  if (typeof(matchedTodo) != "undefined")
   {
-    if (todos[i].id == todoId)
-    {
-      res.json(todos[i]);
-    }
+    res.json(matchedTodo);
+  } else
+  {
+    res.status(404).send();
   }
-  //how to send a 404 if get invalid
-  res.status(404).send();
 });
 //POST a todo to app (can take data)
 app.post('/todos', function(req, res) {
   var body = req.body;
-  body.id = todoNextId++;
-  todos.push(body);
-  res.json(body);
+
+  //validate by checking object properties
+  if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length == 0)
+  {
+    res.status(400).send();
+  } else
+  {
+    body.id = todoNextId++;
+    todos.push(body);
+    res.json(body);
+  }
 });
 
 
