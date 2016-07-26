@@ -36,7 +36,7 @@ app.get('/todos/:id', function(req, res) {
 });
 //POST a todo to app (can take data)
 app.post('/todos', function(req, res) {
-  var body = req.body;
+  var body = _.pick(req.body, 'description', 'completed');
 
   //validate by checking object properties
   if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length == 0)
@@ -44,6 +44,7 @@ app.post('/todos', function(req, res) {
     res.status(400).send();
   } else
   {
+    body.description = body.description.trim();
     body.id = todoNextId++;
     todos.push(body);
     res.json(body);
