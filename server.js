@@ -22,19 +22,23 @@ app.get('/todos', function(req, res) {
   var queryParams = req.query;
   var filteredTodos = todos;
 
-  //if has property && completed === 'true'
+  //if has property && completed === 'true/false'
   if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'true')
   {
-    console.log(queryParams);
     filteredTodos = _.where(filteredTodos, { completed: true});
     return res.json(filteredTodos);
   } else if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'false')
   {
     filteredTodos = _.where(filteredTodos, { completed: false});
     return res.json(filteredTodos);
-  } else
+  } 
+
+  //?q="" query set to string
+  if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0)
   {
-    return res.json(filteredTodos);
+    filteredTodos = _.filter(filteredTodos, function(todo) {
+      return todo.description.indexOf(queryParams.q) > -1;
+    });
   }
 
   res.json(filteredTodos);
