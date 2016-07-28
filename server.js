@@ -63,7 +63,47 @@ app.delete('/todos/:id', function(req, res) {
     res.status(404).json({"error": "no todo found with that id"});
   }
 });
+//UPDATE (PUT) a todo item
+app.put('/todos/:id', function(req, res) {
+  var body = _.pick(req.body, 'description', 'completed');
+  var validAttributes = {};
+  var todoId = parseInt(req.params.id, 10);
+  var matchedTodo = _.findWhere(todos, {id: todoId});
 
+  //matchedTodo not there
+  if (!matchedTodo)
+  {
+    return res.status(404).send();
+  }
+
+  //validate body completed
+  if (body.hasOwnProperty('completed') && _.isBoolean(body.completed))
+  {
+    validAttributes.completed = body.completed;
+  } else if (body.hasOwnProperty('completed'))
+  {
+    //bad because it's not a boolean
+    return res.status(400).send();
+  } else
+  {
+    //never provided attribute, no problem here
+  }
+
+  //validate body description
+  if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0)
+  {
+    validAttributes.description = body.description.trim();
+  } else if (body.hasOwnProperty('description'))
+  {
+    //bad because it's not a boolean
+    return res.status(400).send();
+  }
+
+  //we know we have valid, so we can update
+  matchedTodo = _.extend(matchedTodo, validAttributes);
+  return res.json(matchedTodo);
+
+});
 
 //listening server
 app.listen(PORT, function() {
