@@ -16,10 +16,28 @@ app.use(bodyParser.json());
 app.get('/', function(req, res) {
   res.send("Todo API Root");
 });
-//GET all todos
+//GET all todos, /todos?completed=true
 app.get('/todos', function(req, res) {
   //use .json to stringigy array into json
-  res.json(todos);
+  var queryParams = req.query;
+  var filteredTodos = todos;
+
+  //if has property && completed === 'true'
+  if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'true')
+  {
+    console.log(queryParams);
+    filteredTodos = _.where(filteredTodos, { completed: true});
+    return res.json(filteredTodos);
+  } else if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'false')
+  {
+    filteredTodos = _.where(filteredTodos, { completed: false});
+    return res.json(filteredTodos);
+  } else
+  {
+    return res.json(filteredTodos);
+  }
+
+  res.json(filteredTodos);
 });
 //GET individual todo, use :id for var names
 app.get('/todos/:id', function(req, res) {
