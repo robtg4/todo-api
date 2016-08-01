@@ -79,15 +79,24 @@ app.post('/todos', function(req, res) {
 //DELETE a todo item
 app.delete('/todos/:id', function(req, res) {
   var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos, {id: todoId});
-  if (matchedTodo)
-  {
-    todos = _.without(todos, matchedTodo);
-    res.send("TODO task with id "+matchedTodo.id+" deleted!");
-  } else
-  {
-    res.status(404).json({"error": "no todo found with that id"});
-  }
+  db.todo.destroy({
+    where: {
+      id: todoId
+    }
+  }).then(function(rowsDeleted) {
+    if (rowsDeleted  === 0)
+    {
+      res.status(404).json({
+        error: "No todo with id"
+      });
+    } else
+    {
+      res.status(204).send()
+    }
+  }, function() {
+    res.status(500).send();
+  });
+
 });
 //UPDATE (PUT) a todo item
 app.put('/todos/:id', function(req, res) {
@@ -163,4 +172,14 @@ heroku open
 
 go to github, login, create new repo public no read me
 and then copy and paste push related lines into terminal
+
+When you need to make the server and database live on heroku
+you can add a live db postgres by doing the following:
+heroku addons:create heroku-postgresql:hobby-dev (the type of plan)
+heroku pg_wait
+heroku pg_wait - waiting for the operation to be done
+npm install pg@4.4.1 --save
+npm install pg-hstore@2.3.2 --saves
+made sequelize var changes based on production type
+in db.js (environment variable)
 */
