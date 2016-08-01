@@ -134,6 +134,19 @@ app.put('/todos/:id', function(req, res) {
   });
 
 });
+//user based POST request
+app.post('/users', function(req, res) {
+  var body = _.pick(req.body, 'email', 'password');
+  //create db item and validate with promise chain
+  db.user.create({
+    email: body.email.trim(),
+    password: body.password
+  }).then(function(user) {
+    res.json(user.toJSON());
+  }).catch(function(e) {
+    res.status(400).json(e);
+  });
+});
 
 //synch to db
 db.sequelize.sync({
