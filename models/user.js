@@ -2,6 +2,8 @@
 //models/validate sequelize
 var bcrypt = require('bcrypt');
 var _ = require('underscore');
+var cryptojs = require('crypto-js');
+var jwt = require('jsonwebtoken');
 
 module.exports = function(sequelize, DataTypes) {
   //create variable so we can access it within
@@ -46,6 +48,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     classMethods: {
+      //class methods work of db class
       authenticate: function(body) {
         return new Promise(function(resolve, reject) {
           //check if valid account
@@ -78,10 +81,37 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     instanceMethods: {
+      //instance methods work of user instances
       toPublicJSON: function() {
           //this refers to instance
           var json = this.toJSON();
           return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
+      },
+      generateToken: function(type) {
+        if (!_.isString(type))
+        {
+          return undefined;
+        } else
+        {
+          try {
+            //encypting user information inside a token
+            //data to encrypt and turns to json string
+            var stringData = JSON.stringify({
+              id: this.get('id'),
+              type: type
+            });
+            //AES only encrypt strings, return encrypted string
+            var encryptedData = cryptojs.AES.encrypt(stringData, "abc123!@").toString();
+            //create JSON token
+            var token = jwt.sign({
+              token: encryptedData
+            }, "qwerty098");
+            return token;
+          } catch(e) {
+            console.error(e);
+            return undefined;
+          }
+        }
       }
     }
   });
