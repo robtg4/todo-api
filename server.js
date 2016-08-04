@@ -3,6 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore'); //underscorejs.org
 var db = require('./db.js'); //access to db
+var bcrypt = require('bcrypt');
 
 //variables and data
 var app = express();
@@ -147,10 +148,21 @@ app.post('/users', function(req, res) {
     res.status(400).json(e);
   });
 });
+//POST METHOD login
+app.post('/users/login', function(req, res) {
+  var body = _.pick(req.body, 'email', 'password');
+
+  db.user.authenticate(body).then(function(user) {
+    res.json(user.toPublicJSON());
+  }, function() {
+    res.status(401).send();
+  });
+
+});
 
 //synch to db
 db.sequelize.sync({
-  force: false
+  force: true
 }).then(function() {
   //listening server
   app.listen(PORT, function() {
