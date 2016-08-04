@@ -154,7 +154,15 @@ app.post('/users/login', function(req, res) {
 
   db.user.authenticate(body).then(function(user) {
     var token = user.generateToken('authentication');
-    res.header('Auth', token).json(user.toPublicJSON());
+
+    if (token)
+    {
+      res.header('Auth', token).json(user.toPublicJSON());
+    } else
+    {
+      res.status(401).send();
+    }
+
   }, function() {
     res.status(401).send();
   });
