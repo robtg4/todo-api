@@ -23,7 +23,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
   //use .json to stringigy array into json
   var query = req.query;
   var where = {
-    userid: req.user.get('id')
+    userId: req.user.get('id')
   };
   //if has property && completed === 'true/false'
   if (query.hasOwnProperty('completed') && query.completed == 'true')
@@ -59,7 +59,7 @@ app.get('/todos/:id',middleware.requireAuthentication, function(req, res) {
   db.todo.findOne({
     where: {
       id: todoId,
-      userid: req.user.get('id')
+      userId: req.user.get('id')
     }
   }).then(function(todo) {
     res.json(todo);
@@ -92,7 +92,7 @@ app.delete('/todos/:id',middleware.requireAuthentication, function(req, res) {
   db.todo.destroy({
     where: {
       id: todoId,
-      userid: req.user.get('id')
+      userId: req.user.get('id')
     }
   }).then(function(rowsDeleted) {
     if (rowsDeleted  === 0)
@@ -133,7 +133,7 @@ app.put('/todos/:id',middleware.requireAuthentication, function(req, res) {
     {
       where: {
         id: todoId,
-        userid: req.user.get('id')
+        userId: req.user.get('id')
       }
     }
   ).then(function(todo) {
