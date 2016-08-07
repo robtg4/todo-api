@@ -189,7 +189,7 @@ app.post('/users/login', function(req, res) {
 
 //synch to db
 db.sequelize.sync({
-  //force: true
+  force: true
 }).then(function() {
   //listening server
   app.listen(PORT, function() {
