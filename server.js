@@ -54,19 +54,13 @@ app.get('/todos/:id',middleware.requireAuthentication, function(req, res) {
   //use req.params.var_name to get passed variable value
   var todoId = parseInt(req.params.id, 10);
 
-  db.todo.findAll({
+  db.todo.findOne({
     where: {
       id: todoId,
       userid: req.user.get('id')
     }
   }).then(function(todo) {
-    if (typeof(todo[0]) != 'undefined')
-    {
-      res.json(todo);
-    } else
-    {
-      res.status(404).send();
-    }
+    res.json(todo);
   }).catch(function(e) {
     res.status(400).send(e.message);
   });
@@ -113,6 +107,7 @@ app.delete('/todos/:id',middleware.requireAuthentication, function(req, res) {
   });
 
 });
+
 //UPDATE (PUT) a todo item
 app.put('/todos/:id',middleware.requireAuthentication, function(req, res) {
   var body = _.pick(req.body, 'description', 'completed');
