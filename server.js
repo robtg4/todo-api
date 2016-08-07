@@ -62,7 +62,12 @@ app.get('/todos/:id',middleware.requireAuthentication, function(req, res) {
       userId: req.user.get('id')
     }
   }).then(function(todo) {
-    res.json(todo);
+    if (todo)
+    {
+      res.json(todo.toJSON());
+    } else {
+      res.status(404).send();
+    }
   }).catch(function(e) {
     res.status(400).send(e.message);
   });
