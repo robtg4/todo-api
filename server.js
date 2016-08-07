@@ -23,7 +23,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
   //use .json to stringigy array into json
   var query = req.query;
   var where = {
-    userid: req.user.get('id');
+    userid: req.user.get('id')
   };
   //if has property && completed === 'true/false'
   if (query.hasOwnProperty('completed') && query.completed == 'true')
