@@ -22,7 +22,9 @@ app.get('/', function(req, res) {
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
   //use .json to stringigy array into json
   var query = req.query;
-  var where = {}
+  var where = {
+    userid: req.user.get('id');
+  };
   //if has property && completed === 'true/false'
   if (query.hasOwnProperty('completed') && query.completed == 'true')
   {
@@ -39,12 +41,12 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
     };
   }
   //make request to find all todos for that user
-  req.user.getTodos({
+  db.todo.findAll({
     where: where
   }).then(function(todos) {
-      return res.json(todos);
+    res.json(todos);
   }, function(e) {
-    return res.status(500).send(e.message);
+    res.status(500).send(e)
   });
 
 });
