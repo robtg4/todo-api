@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var _ = require('underscore'); //underscorejs.org
 var db = require('./db.js'); //access to db
 var bcrypt = require('bcrypt');
+var middleware = require('./middleware.js')(db); //mw object
 
 //variables and data
 var app = express();
@@ -19,7 +20,7 @@ app.get('/', function(req, res) {
   res.send("Todo API Root");
 });
 //GET all todos, /todos?completed=true
-app.get('/todos', function(req, res) {
+app.get('/todos', middleware.requireAuthentication, function(req, res) {
   //use .json to stringigy array into json
   var query = req.query;
   var where = {}
@@ -49,7 +50,7 @@ app.get('/todos', function(req, res) {
 
 });
 //GET individual todo, use :id for var names
-app.get('/todos/:id', function(req, res) {
+app.get('/todos/:id',middleware.requireAuthentication, function(req, res) {
   //use req.params.var_name to get passed variable value
   var todoId = parseInt(req.params.id, 10);
   db.todo.findById(todoId).then(function(todo) {
@@ -65,20 +66,23 @@ app.get('/todos/:id', function(req, res) {
   });
 });
 //POST a todo to app (can take data)
-app.post('/todos', function(req, res) {
+app.post('/todos',middleware.requireAuthentication, function(req, res) {
   var body = _.pick(req.body, 'description', 'completed');
   //create db item and validate with promise chain
-  db.todo.create({
-    description: body.description.trim(),
-    completed: body.completed
-  }).then(function(todo) {
-    res.json(todo.toJSON());
+  db.todo.create(body).then(function(todo) {
+    //creates association
+    req.user.addTodo(todo).then(function() {
+      //todo here diff than before, reload
+      return todo.reload();
+    }).then(function(todo) {
+      res.json(todo.toJSON());
+    });
   }).catch(function(e) {
     res.status(400).json(e);
   });
 });
 //DELETE a todo item
-app.delete('/todos/:id', function(req, res) {
+app.delete('/todos/:id',middleware.requireAuthentication, function(req, res) {
   var todoId = parseInt(req.params.id, 10);
   db.todo.destroy({
     where: {
@@ -100,7 +104,7 @@ app.delete('/todos/:id', function(req, res) {
 
 });
 //UPDATE (PUT) a todo item
-app.put('/todos/:id', function(req, res) {
+app.put('/todos/:id',middleware.requireAuthentication, function(req, res) {
   var body = _.pick(req.body, 'description', 'completed');
   var attributes = {};
   var todoId = parseInt(req.params.id, 10);
@@ -135,7 +139,7 @@ app.put('/todos/:id', function(req, res) {
   });
 
 });
-//user based POST request
+//user based POST request (sign up)
 app.post('/users', function(req, res) {
   var body = _.pick(req.body, 'email', 'password');
   //create db item and validate with promise chain
@@ -163,7 +167,7 @@ app.post('/users/login', function(req, res) {
       res.status(401).send();
     }
 
-  }, function() {
+  }, function(e) {
     res.status(401).send();
   });
 

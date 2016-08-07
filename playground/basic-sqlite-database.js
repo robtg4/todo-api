@@ -24,58 +24,103 @@ var Todo = sequelize.define("todo", {
   }
 });
 
+//new model with type
+var User = sequelize.define('user', {
+  email: Sequelize.STRING
+});
+//mapping todos to Users, sets relationship
+Todo.belongsTo(User);
+User.hasMany(Todo);
+
 //synching
 sequelize.sync({
   //force: true
 }).then(function(){
   console.log("Everything is synched");
 
-  //challenge
-  /*
-  Todo.findById(1).then(function(todo) {
-    if (todo)
-    {
-      console.log(todo.toJSON());
-    } else
-    {
-      console.log("Todo not found!")
-    }
-  }).catch(function(e) {
-    console.log(e.message);
-  });
-  */
-
-
-  //create a new todo item (row)
-  /* Todo.create({
-    description: 'Walk my dog all the way',
-    completed: false
-  }).then(function(todo) {
-    return Todo.create({
-      description: "Go through the bowels of hell"
-    });
-  }).then(function(){
-    //return Todo.findById(1) //find by id
-    return Todo.findAll({ //find by criteria
+  //challenge - return todos of user 1 that are true
+  User.findById(1).then(function(user) {
+    user.getTodos({
       where: {
-        //add another completed for querying
-        description: {
-          $like: '%HELL%'
-        }
+        completed: false
       }
-    });
-  }).then(function(todos) {
-    if (todos)
-    {
+    }).then(function(todos) {
       todos.forEach(function(todo) {
         console.log(todo.toJSON());
       });
-    } else
-    {
-      console.log("No todos found!");
-    }
-  }).catch(function(e) {
-    console.log("ERROR: " + e.message);
-  });*/
+    });
+  });
+
+
 
 });
+
+//Belongs in sync function
+
+//creating data (relational data)
+/*
+//set data in database
+User.create({
+  email: 'rogreen@umich.edu'
+}).then(function(user) {
+  return Todo.create({
+    description: 'clean the yard',
+    completed: false
+  });
+}, function(e) {
+
+}).then(function(todo) {
+  User.findById(1).then(function(user) {
+    user.addTodo(todo);
+  });
+}, function(e) {
+  console.log(e);
+});
+*/
+//challenge
+/*
+Todo.findById(1).then(function(todo) {
+  if (todo)
+  {
+    console.log(todo.toJSON());
+  } else
+  {
+    console.log("Todo not found!")
+  }
+}).catch(function(e) {
+  console.log(e.message);
+});
+*/
+
+
+//create a new todo item (row)
+/* Todo.create({
+  description: 'Walk my dog all the way',
+  completed: false
+}).then(function(todo) {
+  return Todo.create({
+    description: "Go through the bowels of hell"
+  });
+}).then(function(){
+  //return Todo.findById(1) //find by id
+  return Todo.findAll({ //find by criteria
+    where: {
+      //add another completed for querying
+      description: {
+        $like: '%HELL%'
+      }
+    }
+  });
+}).then(function(todos) {
+  if (todos)
+  {
+    todos.forEach(function(todo) {
+      console.log(todo.toJSON());
+    });
+  } else
+  {
+    console.log("No todos found!");
+  }
+}).catch(function(e) {
+  console.log("ERROR: " + e.message);
+});*/
