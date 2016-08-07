@@ -9,8 +9,6 @@ var middleware = require('./middleware.js')(db); //mw object
 //variables and data
 var app = express();
 var PORT = process.env.PORT || 3000;
-var todos = [];
-var todoNextId = 1;
 
 //middleware
 app.use(bodyParser.json());
@@ -19,6 +17,7 @@ app.use(bodyParser.json());
 app.get('/', function(req, res) {
   res.send("Todo API Root");
 });
+
 //GET all todos, /todos?completed=true
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
   //use .json to stringigy array into json
@@ -39,32 +38,40 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
       $like: "%"+query.q+"%"
     };
   }
-  //make request to find all
-  db.todo.findAll({
+  //make request to find all todos for that user
+  req.user.getTodos({
     where: where
   }).then(function(todos) {
-    return res.json(todos);
-  }).catch(function(e) {
+      return res.json(todos);
+  }, function(e) {
     return res.status(500).send(e.message);
   });
 
 });
+
 //GET individual todo, use :id for var names
 app.get('/todos/:id',middleware.requireAuthentication, function(req, res) {
   //use req.params.var_name to get passed variable value
   var todoId = parseInt(req.params.id, 10);
-  db.todo.findById(todoId).then(function(todo) {
-    if (!!todo)
+
+  db.todo.findAll({
+    where: {
+      id: todoId,
+      userid: req.user.get('id')
+    }
+  }).then(function(todo) {
+    if (typeof(todo[0]) != 'undefined')
     {
-      res.json(todo.toJSON());
+      res.json(todo);
     } else
     {
-      res.status(404).send("Todo not found!");
+      res.status(404).send();
     }
   }).catch(function(e) {
     res.status(400).send(e.message);
   });
 });
+
 //POST a todo to app (can take data)
 app.post('/todos',middleware.requireAuthentication, function(req, res) {
   var body = _.pick(req.body, 'description', 'completed');
@@ -81,12 +88,15 @@ app.post('/todos',middleware.requireAuthentication, function(req, res) {
     res.status(400).json(e);
   });
 });
+
 //DELETE a todo item
 app.delete('/todos/:id',middleware.requireAuthentication, function(req, res) {
   var todoId = parseInt(req.params.id, 10);
+
   db.todo.destroy({
     where: {
-      id: todoId
+      id: todoId,
+      userid: req.user.get('id')
     }
   }).then(function(rowsDeleted) {
     if (rowsDeleted  === 0)
@@ -122,7 +132,14 @@ app.put('/todos/:id',middleware.requireAuthentication, function(req, res) {
     attributes.description = body.description.trim();
   }
 
-  db.todo.findById(todoId).then(function(todo) {
+  db.todo.findOne(
+    {
+      where: {
+        id: todoId,
+        userid: req.user.get('id')
+      }
+    }
+  ).then(function(todo) {
     if (todo)
     {
       todo.update(attributes).then(function(todo) {
@@ -175,7 +192,7 @@ app.post('/users/login', function(req, res) {
 
 //synch to db
 db.sequelize.sync({
-  force: true
+  //force: true
 }).then(function() {
   //listening server
   app.listen(PORT, function() {
