@@ -171,25 +171,37 @@ app.post('/users', function(req, res) {
     res.status(400).json(e);
   });
 });
+
 //POST METHOD login
 app.post('/users/login', function(req, res) {
   var body = _.pick(req.body, 'email', 'password');
+  var userInstance;
 
   db.user.authenticate(body).then(function(user) {
     var token = user.generateToken('authentication');
+    userInstance = user;
 
-    if (token)
-    {
-      res.header('Auth', token).json(user.toPublicJSON());
-    } else
-    {
-      res.status(401).send();
-    }
+    //save in db
+    return db.token.create({
+      token: token
+    });
 
-  }, function(e) {
+  }).then(function(tokenInstance) {
+    res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+  }).catch(function(e) {
     res.status(401).send();
   });
 
+});
+
+//LOGOUT Route using DELETE method
+//delete a login instance
+app.delete('/users/login', middleware.requireAuthentication, function(req, res) {
+  req.token.destroy().then(function() {
+    res.status(204).send();
+  }).catch(function(e){
+    res.status(500).send(e); 
+  })
 });
 
 //synch to db
